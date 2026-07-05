@@ -1,0 +1,20 @@
+App Name:
+Don’t Tap It!
+
+Short Description:
+A silly premium one-tap game where the button fights back.
+
+Full Description:
+Don’t Tap It! is a fast, funny, premium-looking one-tap game where your only mission is simple: tap the button before it escapes. Sounds easy? It is not. The button moves, shrinks, tricks you with fake buttons, drops bombs, and throws sarcastic messages at you.
+
+Unlock skins, beat your best score, complete daily missions, and prove that your finger is faster than the most dramatic button on your phone.
+
+Features:
+- Fast one-tap gameplay
+- Premium neon visual style
+- Funny sarcastic messages
+- Unlockable button skins
+- Daily missions
+- Offline gameplay
+- No account required
+- Lightweight and mobile-friendly

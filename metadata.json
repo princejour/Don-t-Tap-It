@@ -1,0 +1,6 @@
+{
+  "name": "Don’t Tap It!",
+  "description": "A silly premium one-tap game where the button fights back.",
+  "requestFramePermissions": [],
+  "majorCapabilities": ["MAJOR_CAPABILITY_SERVER_SIDE_GEMINI_API"]
+}

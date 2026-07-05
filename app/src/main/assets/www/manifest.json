@@ -1,0 +1,10 @@
+{
+  "name": "Don't Tap It!",
+  "short_name": "Don't Tap It!",
+  "description": "A silly premium one-tap game where the button fights back.",
+  "start_url": "./index.html",
+  "display": "fullscreen",
+  "background_color": "#0B0E14",
+  "theme_color": "#FF2A5F",
+  "orientation": "portrait"
+}

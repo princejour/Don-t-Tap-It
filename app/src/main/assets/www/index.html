@@ -1,0 +1,107 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>Don't Tap It!</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="manifest" href="manifest.json">
+</head>
+<body>
+    <div id="game-container">
+        <!-- Splash Screen -->
+        <div id="screen-splash" class="screen active">
+            <h1 class="neon-title">Don't Tap It!</h1>
+            <div class="loader"></div>
+        </div>
+
+        <!-- Home Screen -->
+        <div id="screen-home" class="screen">
+            <h1 class="neon-title small">Don't Tap It!</h1>
+            <div class="button-group">
+                <button class="btn btn-primary" id="btn-start">Start Tapping</button>
+                <button class="btn btn-secondary" id="btn-shop">Shop</button>
+                <button class="btn btn-secondary" id="btn-missions">Missions</button>
+            </div>
+            <div class="stats-panel glass-panel">
+                <p>Best Score: <span id="home-best-score">0</span></p>
+                <p>Coins: <span id="home-coins">0</span></p>
+            </div>
+            <div class="bottom-links">
+                <button class="btn btn-icon" id="btn-settings">⚙️ Settings</button>
+            </div>
+        </div>
+
+        <!-- Gameplay Screen -->
+        <div id="screen-game" class="screen">
+            <div class="hud">
+                <div class="hud-top">
+                    <span class="score">Score: <span id="game-score">0</span></span>
+                    <span class="combo">Combo x<span id="game-combo">1</span></span>
+                </div>
+                <div class="energy-bar-container">
+                    <div class="energy-bar" id="energy-bar"></div>
+                </div>
+            </div>
+            <div id="play-area">
+                <div id="target-button" class="game-object skin-default">TAP</div>
+                <div id="message-toast" class="toast hidden"></div>
+            </div>
+        </div>
+
+        <!-- Game Over Screen -->
+        <div id="screen-gameover" class="screen">
+            <h2 class="neon-title small">Game Over</h2>
+            <p class="subtitle">The button won.</p>
+            <div class="glass-panel text-center">
+                <p>Score: <span id="end-score">0</span></p>
+                <p>Best: <span id="end-best">0</span></p>
+                <p>Coins Earned: +<span id="end-coins">0</span></p>
+            </div>
+            <div class="button-group mt-2">
+                <button class="btn btn-primary" id="btn-restart">Play Again</button>
+                <button class="btn btn-ad" id="btn-ad-continue">Watch Ad to Continue</button>
+                <button class="btn btn-secondary" id="btn-home-from-end">Home</button>
+            </div>
+        </div>
+
+        <!-- Shop Screen -->
+        <div id="screen-shop" class="screen">
+            <h2 class="neon-title small">Shop</h2>
+            <p>Coins: <span id="shop-coins">0</span></p>
+            <div class="shop-grid" id="shop-grid">
+                <!-- Shop items injected via JS -->
+            </div>
+            <button class="btn btn-secondary mt-2" id="btn-home-from-shop">Back</button>
+        </div>
+
+        <!-- Missions Screen -->
+        <div id="screen-missions" class="screen">
+            <h2 class="neon-title small">Daily Missions</h2>
+            <div class="missions-list" id="missions-list">
+                <!-- Missions injected via JS -->
+            </div>
+            <button class="btn btn-secondary mt-2" id="btn-home-from-missions">Back</button>
+        </div>
+
+        <!-- Settings Screen -->
+        <div id="screen-settings" class="screen">
+            <h2 class="neon-title small">Settings</h2>
+            <div class="settings-list glass-panel">
+                <label class="setting-item">
+                    <span>Sound</span>
+                    <input type="checkbox" id="toggle-sound" checked>
+                </label>
+                <label class="setting-item">
+                    <span>Vibration</span>
+                    <input type="checkbox" id="toggle-vibration" checked>
+                </label>
+                <button class="btn btn-danger mt-1" id="btn-reset">Reset Progress</button>
+            </div>
+            <p class="credits">Credits: All assets are original or generated for this game.</p>
+            <button class="btn btn-secondary mt-2" id="btn-home-from-settings">Back</button>
+        </div>
+    </div>
+    <script src="game.js"></script>
+</body>
+</html>
