@@ -233,7 +233,7 @@ function initApp() {
     safeBind('btn-settings', () => showScreen('settings'));
     
     safeBind('btn-restart', startGame);
-    safeBind('btn-ad-continue', () => { handleRewardedCoins(); });
+    safeBind('btn-ad-continue', handleRewardedContinue);
     safeBind('btn-home-from-end', () => showScreen('home'));
     safeBind('btn-home-from-shop', () => showScreen('home'));
     safeBind('btn-home-from-missions', () => showScreen('home'));
@@ -299,6 +299,7 @@ function handleRewardedCoins() {
     const rewardAmount = 100;
 
     if (window.AndroidRewardedAd && typeof window.AndroidRewardedAd.showRewardedAd === 'function') {
+        window.pendingRewardType = 'coins';
         window.pendingRewardCoins = rewardAmount;
         window.AndroidRewardedAd.showRewardedAd();
         showToast('Loading rewarded ad...');
@@ -308,14 +309,48 @@ function handleRewardedCoins() {
     addCoins(rewardAmount, '+100 coins rewarded!');
 }
 
+function continueAfterRewardedAd() {
+    fakeButtons.forEach(b => b.remove());
+    fakeButtons = [];
+    energy = 70;
+    if (energyBar) energyBar.style.width = '70%';
+    isPlaying = true;
+    showScreen('game');
+    moveButton(targetBtn);
+    clearInterval(gameLoop);
+    gameLoop = setInterval(updateGame, 100);
+    playSound('combo');
+    showToast('Continue unlocked!');
+}
+
+function handleRewardedContinue() {
+    unlockAudio();
+
+    if (window.AndroidRewardedAd && typeof window.AndroidRewardedAd.showRewardedAd === 'function') {
+        window.pendingRewardType = 'continue';
+        window.AndroidRewardedAd.showRewardedAd();
+        showToast('Loading rewarded ad...');
+        return;
+    }
+
+    continueAfterRewardedAd();
+}
+
 window.onRewardedAdEarned = function(amount) {
-    addCoins(Number(amount) || window.pendingRewardCoins || 100, '+100 coins rewarded!');
+    if (window.pendingRewardType === 'continue') {
+        continueAfterRewardedAd();
+    } else {
+        addCoins(Number(amount) || window.pendingRewardCoins || 100, '+100 coins rewarded!');
+    }
+    window.pendingRewardType = null;
     window.pendingRewardCoins = 0;
 };
 
 window.onRewardedAdUnavailable = function() {
     playSound('wrong');
     showToast('Rewarded ad is not available now.');
+    window.pendingRewardType = null;
+    window.pendingRewardCoins = 0;
 };
 
 // Game Logic
