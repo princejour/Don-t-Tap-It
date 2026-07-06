@@ -130,6 +130,29 @@ function playSound(type) {
     document.addEventListener(eventName, unlockAudio, { passive: true });
 });
 
+function bindTap(el, handler) {
+    if (!el) return;
+    el.style.pointerEvents = 'auto';
+    el.style.cursor = 'pointer';
+
+    let lastTapTime = 0;
+    const wrapped = (e) => {
+        if (e && e.cancelable) e.preventDefault();
+        const now = Date.now();
+        if (now - lastTapTime < 250) return;
+        lastTapTime = now;
+        unlockAudio();
+        handler(e);
+    };
+
+    if (window.PointerEvent) {
+        el.addEventListener('pointerdown', wrapped, { passive: false });
+    } else {
+        el.addEventListener('touchstart', wrapped, { passive: false });
+        el.addEventListener('click', wrapped, { passive: false });
+    }
+}
+
 // Gameplay Variables
 let score = 0;
 let combo = 0;
@@ -197,20 +220,7 @@ function initApp() {
     function safeBind(id, handler) {
         const el = document.getElementById(id);
         if (el) {
-            el.style.pointerEvents = 'auto'; // Ensure pointer events are enabled
-            el.style.cursor = 'pointer';
-
-            const runHandler = (e) => {
-                unlockAudio();
-                handler(e);
-            };
-
-            el.addEventListener('pointerdown', runHandler);
-            el.addEventListener('click', runHandler);
-            el.addEventListener('touchstart', (e) => {
-                e.preventDefault(); // prevent double click
-                runHandler(e);
-            }, { passive: false });
+            bindTap(el, handler);
         } else {
             console.error(`Button ${id} not found.`);
         }
@@ -248,9 +258,7 @@ function initApp() {
     if (btnReset) btnReset.onclick = () => { localStorage.clear(); location.reload(); };
 
     if (targetBtn) {
-        targetBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); unlockAudio(); handleTap(true); });
-        targetBtn.ontouchstart = (e) => { e.preventDefault(); unlockAudio(); handleTap(true); };
-        targetBtn.onmousedown = (e) => { e.preventDefault(); unlockAudio(); handleTap(true); };
+        bindTap(targetBtn, () => handleTap(true));
     }
 }
 
@@ -378,9 +386,7 @@ function spawnFakeButton() {
     
     moveButton(fake);
     
-    fake.addEventListener('pointerdown', (e) => { e.preventDefault(); unlockAudio(); handleTap(false); });
-    fake.ontouchstart = (e) => { e.preventDefault(); unlockAudio(); handleTap(false); };
-    fake.onmousedown = (e) => { e.preventDefault(); unlockAudio(); handleTap(false); };
+    bindTap(fake, () => handleTap(false));
     
     playArea.appendChild(fake);
     fakeButtons.push(fake);
@@ -440,8 +446,7 @@ function openShop() {
             </button>
         `;
         
-        div.querySelector('button').onclick = () => {
-            unlockAudio();
+        bindTap(div.querySelector('button'), () => {
             if (isUnlocked) {
                 state.selectedSkin = item.id;
                 saveData();
@@ -456,7 +461,7 @@ function openShop() {
             } else {
                 alert("Not enough coins!");
             }
-        };
+        });
         
         grid.appendChild(div);
     });
