@@ -84,6 +84,7 @@ html, body {
     font-size: 1.2rem;
     font-weight: bold;
     cursor: pointer;
+    pointer-events: auto;
     transition: transform 0.1s, box-shadow 0.2s;
     text-align: center;
     color: white;

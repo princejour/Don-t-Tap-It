@@ -1,3 +1,9 @@
+// Safe error handling
+window.onerror = function(msg, url, lineNo, columnNo, error) {
+    console.error('JS Error: ' + msg + ' at ' + lineNo + ':' + columnNo);
+    return false;
+};
+
 // Game State
 let state = {
     bestScore: 0,
@@ -63,40 +69,82 @@ function saveData() {
 
 // Navigation
 function showScreen(id) {
-    Object.values(screens).forEach(s => s.classList.remove('active'));
-    screens[id].classList.add('active');
+    Object.values(screens).forEach(s => {
+        if (s) s.classList.remove('active');
+    });
+    if (screens[id]) {
+        screens[id].classList.add('active');
+    } else {
+        console.error('Screen not found: ' + id);
+    }
 }
 
-// Init
-document.addEventListener('DOMContentLoaded', () => {
+function initApp() {
     loadData();
     showScreen('home');
     
-    // Bind buttons
-    document.getElementById('btn-start').onclick = startGame;
-    document.getElementById('btn-shop').onclick = openShop;
-    document.getElementById('btn-missions').onclick = openMissions;
-    document.getElementById('btn-settings').onclick = () => showScreen('settings');
-    
-    document.getElementById('btn-restart').onclick = startGame;
-    document.getElementById('btn-home-from-end').onclick = () => showScreen('home');
-    document.getElementById('btn-home-from-shop').onclick = () => showScreen('home');
-    document.getElementById('btn-home-from-missions').onclick = () => showScreen('home');
-    document.getElementById('btn-home-from-settings').onclick = () => showScreen('home');
-    
-    document.getElementById('toggle-sound').onchange = (e) => { state.sound = e.target.checked; saveData(); };
-    document.getElementById('toggle-vibration').onchange = (e) => { state.vibration = e.target.checked; saveData(); };
-    document.getElementById('btn-reset').onclick = () => { localStorage.clear(); location.reload(); };
+    function safeBind(id, handler) {
+        const el = document.getElementById(id);
+        if (el) {
+            el.style.pointerEvents = 'auto'; // Ensure pointer events are enabled
+            el.style.cursor = 'pointer';
+            el.addEventListener('click', handler);
+            el.addEventListener('touchstart', (e) => {
+                e.preventDefault(); // prevent double click
+                handler();
+            }, { passive: false });
+        } else {
+            console.error(`Button ${id} not found.`);
+        }
+    }
 
-    targetBtn.ontouchstart = (e) => { e.preventDefault(); handleTap(true); };
-    targetBtn.onmousedown = (e) => { e.preventDefault(); handleTap(true); };
-};
+    // Bind buttons
+    safeBind('btn-start', startGame);
+    safeBind('btn-shop', openShop);
+    safeBind('btn-missions', openMissions);
+    safeBind('btn-settings', () => showScreen('settings'));
+    
+    safeBind('btn-restart', startGame);
+    safeBind('btn-ad-continue', () => { showToast('Ads not loaded'); showScreen('home'); });
+    safeBind('btn-home-from-end', () => showScreen('home'));
+    safeBind('btn-home-from-shop', () => showScreen('home'));
+    safeBind('btn-home-from-missions', () => showScreen('home'));
+    safeBind('btn-home-from-settings', () => showScreen('home'));
+    
+    const toggleSound = document.getElementById('toggle-sound');
+    if (toggleSound) toggleSound.onchange = (e) => { state.sound = e.target.checked; saveData(); };
+    
+    const toggleVib = document.getElementById('toggle-vibration');
+    if (toggleVib) toggleVib.onchange = (e) => { state.vibration = e.target.checked; saveData(); };
+    
+    const btnReset = document.getElementById('btn-reset');
+    if (btnReset) btnReset.onclick = () => { localStorage.clear(); location.reload(); };
+
+    if (targetBtn) {
+        targetBtn.ontouchstart = (e) => { e.preventDefault(); handleTap(true); };
+        targetBtn.onmousedown = (e) => { e.preventDefault(); handleTap(true); };
+    }
+}
+
+// Init
+if (document.readyState === 'loading') {
+    document.addEventListener('DOMContentLoaded', initApp);
+} else {
+    initApp();
+}
 
 function updateHomeStats() {
-    document.getElementById('home-best-score').innerText = state.bestScore;
-    document.getElementById('home-coins').innerText = state.coins;
-    document.getElementById('toggle-sound').checked = state.sound;
-    document.getElementById('toggle-vibration').checked = state.vibration;
+    const elScore = document.getElementById('home-best-score');
+    if (elScore) elScore.innerText = state.bestScore;
+    
+    const elCoins = document.getElementById('home-coins');
+    if (elCoins) elCoins.innerText = state.coins;
+    
+    const elSound = document.getElementById('toggle-sound');
+    if (elSound) elSound.checked = state.sound;
+    
+    const elVib = document.getElementById('toggle-vibration');
+    if (elVib) elVib.checked = state.vibration;
 }
 
 // Game Logic
