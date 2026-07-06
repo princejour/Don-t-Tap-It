@@ -233,7 +233,7 @@ function initApp() {
     safeBind('btn-settings', () => showScreen('settings'));
     
     safeBind('btn-restart', startGame);
-    safeBind('btn-ad-continue', () => { showToast('Ads not loaded'); showScreen('home'); });
+    safeBind('btn-ad-continue', () => { handleRewardedCoins(); });
     safeBind('btn-home-from-end', () => showScreen('home'));
     safeBind('btn-home-from-shop', () => showScreen('home'));
     safeBind('btn-home-from-missions', () => showScreen('home'));
@@ -276,12 +276,47 @@ function updateHomeStats() {
     const elCoins = document.getElementById('home-coins');
     if (elCoins) elCoins.innerText = state.coins;
     
+    const shopCoins = document.getElementById('shop-coins');
+    if (shopCoins) shopCoins.innerText = state.coins;
+    
     const elSound = document.getElementById('toggle-sound');
     if (elSound) elSound.checked = state.sound;
     
     const elVib = document.getElementById('toggle-vibration');
     if (elVib) elVib.checked = state.vibration;
 }
+
+function addCoins(amount, message) {
+    state.coins += amount;
+    saveData();
+    updateHomeStats();
+    playSound('buy');
+    showToast(message || `+${amount} coins added!`);
+}
+
+function handleRewardedCoins() {
+    unlockAudio();
+    const rewardAmount = 100;
+
+    if (window.AndroidRewardedAd && typeof window.AndroidRewardedAd.showRewardedAd === 'function') {
+        window.pendingRewardCoins = rewardAmount;
+        window.AndroidRewardedAd.showRewardedAd();
+        showToast('Loading rewarded ad...');
+        return;
+    }
+
+    addCoins(rewardAmount, '+100 coins rewarded!');
+}
+
+window.onRewardedAdEarned = function(amount) {
+    addCoins(Number(amount) || window.pendingRewardCoins || 100, '+100 coins rewarded!');
+    window.pendingRewardCoins = 0;
+};
+
+window.onRewardedAdUnavailable = function() {
+    playSound('wrong');
+    showToast('Rewarded ad is not available now.');
+};
 
 // Game Logic
 function startGame() {
@@ -448,7 +483,21 @@ function openShop() {
         hint.style.textAlign = 'center';
         grid.parentNode.insertBefore(hint, grid);
     }
-    hint.innerHTML = 'Earn coins by playing.<br>No coin purchases in this version.';
+    hint.innerHTML = 'Earn coins by playing or watching rewarded ads.';
+
+    let rewardBtn = document.getElementById('btn-watch-ad-coins');
+    if (!rewardBtn) {
+        rewardBtn = document.createElement('button');
+        rewardBtn.id = 'btn-watch-ad-coins';
+        rewardBtn.className = 'btn btn-primary';
+        rewardBtn.style.display = 'block';
+        rewardBtn.style.margin = '0 auto 16px';
+        rewardBtn.style.padding = '10px 18px';
+        rewardBtn.style.fontSize = '0.95rem';
+        grid.parentNode.insertBefore(rewardBtn, grid);
+        bindTap(rewardBtn, handleRewardedCoins);
+    }
+    rewardBtn.innerText = 'Watch Ad +100 Coins';
     
     shopItems.forEach(item => {
         const div = document.createElement('div');
@@ -478,7 +527,7 @@ function openShop() {
                 openShop();
             } else {
                 playSound('wrong');
-                showToast('Not enough coins. Play to earn more.');
+                showToast('Not enough coins. Play or watch an ad.');
             }
         });
         
