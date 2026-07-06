@@ -459,7 +459,8 @@ function openShop() {
                 saveData();
                 openShop();
             } else {
-                alert("Not enough coins!");
+                playSound('wrong');
+                showToast('Not enough coins!');
             }
         });
         
