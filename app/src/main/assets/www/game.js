@@ -431,6 +431,24 @@ function openShop() {
     document.getElementById('shop-coins').innerText = state.coins;
     const grid = document.getElementById('shop-grid');
     grid.innerHTML = '';
+
+    let hint = document.getElementById('shop-coin-hint');
+    if (!hint) {
+        hint = document.createElement('div');
+        hint.id = 'shop-coin-hint';
+        hint.style.margin = '8px auto 14px';
+        hint.style.maxWidth = '86%';
+        hint.style.padding = '10px 14px';
+        hint.style.borderRadius = '16px';
+        hint.style.background = 'rgba(255,255,255,0.08)';
+        hint.style.border = '1px solid rgba(255,255,255,0.12)';
+        hint.style.color = 'rgba(255,255,255,0.86)';
+        hint.style.fontSize = '0.9rem';
+        hint.style.lineHeight = '1.35';
+        hint.style.textAlign = 'center';
+        grid.parentNode.insertBefore(hint, grid);
+    }
+    hint.innerHTML = 'Earn coins by playing.<br>No coin purchases in this version.';
     
     shopItems.forEach(item => {
         const div = document.createElement('div');
@@ -442,7 +460,7 @@ function openShop() {
             <div class="shop-icon" style="background:${item.color}"></div>
             <div>${item.name}</div>
             <button class="btn btn-primary mt-1" style="font-size:0.9rem; padding: 5px 10px;">
-                ${isUnlocked ? (state.selectedSkin === item.id ? 'Equipped' : 'Select') : 'Buy ' + item.price}
+                ${isUnlocked ? (state.selectedSkin === item.id ? 'Equipped' : 'Select') : 'Unlock - ' + item.price + ' coins'}
             </button>
         `;
         
@@ -460,7 +478,7 @@ function openShop() {
                 openShop();
             } else {
                 playSound('wrong');
-                showToast('Not enough coins!');
+                showToast('Not enough coins. Play to earn more.');
             }
         });
         
