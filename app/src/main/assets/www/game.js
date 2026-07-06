@@ -19,81 +19,116 @@ let state = {
     }
 };
 
-// Audio Manager
-const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+// Audio Manager - lazy Web Audio initialization for Android WebView
+let audioCtx = null;
 let audioUnlocked = false;
+let lastMoveSoundAt = 0;
+
+function getAudioContext() {
+    if (!audioCtx) {
+        const AudioContextClass = window.AudioContext || window.webkitAudioContext;
+        if (!AudioContextClass) {
+            console.warn('Web Audio API is not supported on this device.');
+            return null;
+        }
+        audioCtx = new AudioContextClass();
+        console.log('AudioContext created');
+    }
+    return audioCtx;
+}
 
 function unlockAudio() {
-    if (!audioUnlocked) {
-        audioCtx.resume().then(() => {
-            audioUnlocked = true;
-        });
+    if (!state.sound) return;
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    const markUnlocked = () => {
+        audioUnlocked = true;
+        console.log('Audio unlocked');
+    };
+
+    try {
+        if (ctx.state === 'suspended') {
+            ctx.resume().then(() => {
+                markUnlocked();
+                console.log('AudioContext resumed');
+            }).catch((err) => console.warn('AudioContext resume failed:', err));
+        } else {
+            markUnlocked();
+        }
+    } catch (err) {
+        console.warn('Audio unlock error:', err);
     }
 }
-document.addEventListener('click', unlockAudio, { once: true });
-document.addEventListener('touchstart', unlockAudio, { once: true });
+
+function playTone(frequencies, duration = 0.12, type = 'sine', volume = 0.45) {
+    if (!state.sound) {
+        console.log('Sound disabled');
+        return;
+    }
+
+    const ctx = getAudioContext();
+    if (!ctx) return;
+
+    try {
+        if (ctx.state === 'suspended') {
+            ctx.resume().catch((err) => console.warn('AudioContext resume failed:', err));
+        }
+
+        const now = ctx.currentTime;
+        const osc = ctx.createOscillator();
+        const gainNode = ctx.createGain();
+
+        osc.type = type;
+        osc.connect(gainNode);
+        gainNode.connect(ctx.destination);
+
+        const freqList = Array.isArray(frequencies) ? frequencies : [frequencies];
+        osc.frequency.setValueAtTime(freqList[0], now);
+        freqList.forEach((freq, index) => {
+            osc.frequency.setValueAtTime(freq, now + index * (duration / Math.max(freqList.length, 1)));
+        });
+
+        gainNode.gain.setValueAtTime(0.0001, now);
+        gainNode.gain.exponentialRampToValueAtTime(Math.max(volume, 0.0001), now + 0.01);
+        gainNode.gain.exponentialRampToValueAtTime(0.0001, now + duration);
+
+        osc.start(now);
+        osc.stop(now + duration + 0.02);
+    } catch (err) {
+        console.error('Audio error:', err);
+    }
+}
 
 function playSound(type) {
-    if (!state.sound || !audioUnlocked) return;
-    try {
-        const osc = audioCtx.createOscillator();
-        const gainNode = audioCtx.createGain();
-        osc.connect(gainNode);
-        gainNode.connect(audioCtx.destination);
-        const now = audioCtx.currentTime;
-        if (type === 'tap') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(600, now);
-            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
-            gainNode.gain.setValueAtTime(0.3, now);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
-            osc.start(now);
-            osc.stop(now + 0.1);
-        } else if (type === 'combo') {
-            osc.type = 'square';
-            osc.frequency.setValueAtTime(400, now);
-            osc.frequency.setValueAtTime(600, now + 0.05);
-            osc.frequency.setValueAtTime(800, now + 0.1);
-            gainNode.gain.setValueAtTime(0.1, now);
-            gainNode.gain.linearRampToValueAtTime(0, now + 0.15);
-            osc.start(now);
-            osc.stop(now + 0.15);
-        } else if (type === 'gameover') {
-            osc.type = 'sawtooth';
-            osc.frequency.setValueAtTime(300, now);
-            osc.frequency.exponentialRampToValueAtTime(50, now + 0.5);
-            gainNode.gain.setValueAtTime(0.2, now);
-            gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
-            osc.start(now);
-            osc.stop(now + 0.5);
-        } else if (type === 'buy') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(800, now);
-            osc.frequency.setValueAtTime(1200, now + 0.1);
-            gainNode.gain.setValueAtTime(0.2, now);
-            gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
-            osc.start(now);
-            osc.stop(now + 0.3);
-        } else if (type === 'move') {
-            osc.type = 'triangle';
-            osc.frequency.setValueAtTime(200, now);
-            osc.frequency.linearRampToValueAtTime(100, now + 0.1);
-            gainNode.gain.setValueAtTime(0.05, now);
-            gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
-            osc.start(now);
-            osc.stop(now + 0.1);
-        } else if (type === 'test') {
-            osc.type = 'sine';
-            osc.frequency.setValueAtTime(440, now);
-            gainNode.gain.setValueAtTime(0.2, now);
-            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
-            osc.start(now);
-            osc.stop(now + 0.2);
+    if (!state.sound) return;
+    unlockAudio();
+
+    if (type === 'tap') {
+        playTone([780, 1120], 0.10, 'sine', 0.55);
+        console.log('Tap sound played');
+    } else if (type === 'combo') {
+        playTone([660, 880, 1320], 0.20, 'square', 0.35);
+    } else if (type === 'gameover') {
+        playTone([340, 220, 120], 0.45, 'sawtooth', 0.35);
+    } else if (type === 'buy') {
+        playTone([740, 980, 1480], 0.28, 'sine', 0.45);
+    } else if (type === 'move') {
+        const now = Date.now();
+        if (now - lastMoveSoundAt > 250) {
+            lastMoveSoundAt = now;
+            playTone([220, 170], 0.08, 'triangle', 0.16);
         }
-    } catch(e) {
-        console.error("Audio error: ", e);
+    } else if (type === 'wrong') {
+        playTone([180, 90], 0.25, 'square', 0.35);
+    } else if (type === 'test') {
+        playTone([880, 1320], 0.18, 'sine', 0.55);
     }
 }
+
+['pointerdown', 'touchstart', 'click'].forEach((eventName) => {
+    document.addEventListener(eventName, unlockAudio, { passive: true });
+});
 
 // Gameplay Variables
 let score = 0;
@@ -164,14 +199,17 @@ function initApp() {
         if (el) {
             el.style.pointerEvents = 'auto'; // Ensure pointer events are enabled
             el.style.cursor = 'pointer';
-            el.addEventListener('click', (e) => {
+
+            const runHandler = (e) => {
                 unlockAudio();
                 handler(e);
-            });
+            };
+
+            el.addEventListener('pointerdown', runHandler);
+            el.addEventListener('click', runHandler);
             el.addEventListener('touchstart', (e) => {
                 e.preventDefault(); // prevent double click
-                unlockAudio();
-                handler(e);
+                runHandler(e);
             }, { passive: false });
         } else {
             console.error(`Button ${id} not found.`);
@@ -195,7 +233,12 @@ function initApp() {
     if (toggleSound) toggleSound.onchange = (e) => { 
         state.sound = e.target.checked; 
         saveData(); 
-        if (state.sound) playSound('test');
+        if (state.sound) {
+            unlockAudio();
+            playSound('test');
+        } else {
+            console.log('Sound disabled');
+        }
     };
     
     const toggleVib = document.getElementById('toggle-vibration');
@@ -205,6 +248,7 @@ function initApp() {
     if (btnReset) btnReset.onclick = () => { localStorage.clear(); location.reload(); };
 
     if (targetBtn) {
+        targetBtn.addEventListener('pointerdown', (e) => { e.preventDefault(); unlockAudio(); handleTap(true); });
         targetBtn.ontouchstart = (e) => { e.preventDefault(); unlockAudio(); handleTap(true); };
         targetBtn.onmousedown = (e) => { e.preventDefault(); unlockAudio(); handleTap(true); };
     }
@@ -233,6 +277,7 @@ function updateHomeStats() {
 
 // Game Logic
 function startGame() {
+    unlockAudio();
     score = 0;
     combo = 0;
     energy = 100;
@@ -251,6 +296,7 @@ function startGame() {
     
     showScreen('game');
     moveButton(targetBtn);
+    playSound('test');
     
     state.missions.gamesPlayed++;
     saveData();
@@ -273,6 +319,7 @@ function updateGame() {
 
 function handleTap(isCorrect) {
     if (!isPlaying) return;
+    unlockAudio();
     
     if (state.vibration && navigator.vibrate) navigator.vibrate(20);
     
@@ -300,6 +347,7 @@ function handleTap(isCorrect) {
         if (score % 5 === 0) showToast(funnyMessages[Math.floor(Math.random() * funnyMessages.length)]);
         if (score > 10 && Math.random() > 0.7) spawnFakeButton();
     } else {
+        playSound('wrong');
         gameOver();
     }
 }
@@ -330,6 +378,7 @@ function spawnFakeButton() {
     
     moveButton(fake);
     
+    fake.addEventListener('pointerdown', (e) => { e.preventDefault(); unlockAudio(); handleTap(false); });
     fake.ontouchstart = (e) => { e.preventDefault(); unlockAudio(); handleTap(false); };
     fake.onmousedown = (e) => { e.preventDefault(); unlockAudio(); handleTap(false); };
     
@@ -392,6 +441,7 @@ function openShop() {
         `;
         
         div.querySelector('button').onclick = () => {
+            unlockAudio();
             if (isUnlocked) {
                 state.selectedSkin = item.id;
                 saveData();
