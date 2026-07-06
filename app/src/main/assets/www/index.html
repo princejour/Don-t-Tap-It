@@ -4,19 +4,13 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
     <title>Don't Tap It!</title>
-    <link rel="stylesheet" href="style.css">
-    <link rel="manifest" href="manifest.json">
+    <link rel="stylesheet" href="./style.css">
+    <link rel="manifest" href="./manifest.json">
 </head>
 <body>
     <div id="game-container">
-        <!-- Splash Screen -->
-        <div id="screen-splash" class="screen active">
-            <h1 class="neon-title">Don't Tap It!</h1>
-            <div class="loader"></div>
-        </div>
-
-        <!-- Home Screen -->
-        <div id="screen-home" class="screen">
+        <!-- Home Screen (Default Active) -->
+        <div id="screen-home" class="screen active">
             <h1 class="neon-title small">Don't Tap It!</h1>
             <div class="button-group">
                 <button class="btn btn-primary" id="btn-start">Start Tapping</button>
@@ -102,6 +96,12 @@
             <button class="btn btn-secondary mt-2" id="btn-home-from-settings">Back</button>
         </div>
     </div>
-    <script src="game.js"></script>
+    <noscript>
+        <div style="display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; background: #050505; color: white;">
+            <h1>Don’t Tap It!</h1>
+            <button style="padding: 15px 20px; font-size: 1.2rem; font-weight: bold; background: #FF2A5F; color: white; border: none; border-radius: 12px;">Start Tapping</button>
+        </div>
+    </noscript>
+    <script src="./game.js"></script>
 </body>
 </html>

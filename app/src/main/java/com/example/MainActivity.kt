@@ -25,7 +25,7 @@ class MainActivity : ComponentActivity() {
       Box(
         modifier = Modifier
           .fillMaxSize()
-          .background(Color(0xFF0B0E14))
+          .background(Color(0xFF050505))
           .systemBarsPadding()
       ) {
         GameWebView()
@@ -40,6 +40,10 @@ fun GameWebView() {
   AndroidView(
     factory = { context ->
       WebView(context).apply {
+        layoutParams = android.view.ViewGroup.LayoutParams(
+          android.view.ViewGroup.LayoutParams.MATCH_PARENT,
+          android.view.ViewGroup.LayoutParams.MATCH_PARENT
+        )
         settings.apply {
           javaScriptEnabled = true
           domStorageEnabled = true
@@ -47,6 +51,7 @@ fun GameWebView() {
           mixedContentMode = WebSettings.MIXED_CONTENT_ALWAYS_ALLOW
         }
         webViewClient = WebViewClient()
+        webChromeClient = android.webkit.WebChromeClient()
         loadUrl("file:///android_asset/www/index.html")
       }
     },

@@ -25,7 +25,6 @@ let fakeButtons = [];
 
 // DOM Elements
 const screens = {
-    splash: document.getElementById('screen-splash'),
     home: document.getElementById('screen-home'),
     game: document.getElementById('screen-game'),
     gameover: document.getElementById('screen-gameover'),
@@ -69,9 +68,9 @@ function showScreen(id) {
 }
 
 // Init
-window.onload = () => {
+document.addEventListener('DOMContentLoaded', () => {
     loadData();
-    setTimeout(() => { showScreen('home'); }, 1500);
+    showScreen('home');
     
     // Bind buttons
     document.getElementById('btn-start').onclick = startGame;
