@@ -19,6 +19,82 @@ let state = {
     }
 };
 
+// Audio Manager
+const audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+let audioUnlocked = false;
+
+function unlockAudio() {
+    if (!audioUnlocked) {
+        audioCtx.resume().then(() => {
+            audioUnlocked = true;
+        });
+    }
+}
+document.addEventListener('click', unlockAudio, { once: true });
+document.addEventListener('touchstart', unlockAudio, { once: true });
+
+function playSound(type) {
+    if (!state.sound || !audioUnlocked) return;
+    try {
+        const osc = audioCtx.createOscillator();
+        const gainNode = audioCtx.createGain();
+        osc.connect(gainNode);
+        gainNode.connect(audioCtx.destination);
+        const now = audioCtx.currentTime;
+        if (type === 'tap') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(1200, now + 0.1);
+            gainNode.gain.setValueAtTime(0.3, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+        } else if (type === 'combo') {
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(400, now);
+            osc.frequency.setValueAtTime(600, now + 0.05);
+            osc.frequency.setValueAtTime(800, now + 0.1);
+            gainNode.gain.setValueAtTime(0.1, now);
+            gainNode.gain.linearRampToValueAtTime(0, now + 0.15);
+            osc.start(now);
+            osc.stop(now + 0.15);
+        } else if (type === 'gameover') {
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(300, now);
+            osc.frequency.exponentialRampToValueAtTime(50, now + 0.5);
+            gainNode.gain.setValueAtTime(0.2, now);
+            gainNode.gain.linearRampToValueAtTime(0, now + 0.5);
+            osc.start(now);
+            osc.stop(now + 0.5);
+        } else if (type === 'buy') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(800, now);
+            osc.frequency.setValueAtTime(1200, now + 0.1);
+            gainNode.gain.setValueAtTime(0.2, now);
+            gainNode.gain.linearRampToValueAtTime(0, now + 0.3);
+            osc.start(now);
+            osc.stop(now + 0.3);
+        } else if (type === 'move') {
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(200, now);
+            osc.frequency.linearRampToValueAtTime(100, now + 0.1);
+            gainNode.gain.setValueAtTime(0.05, now);
+            gainNode.gain.linearRampToValueAtTime(0, now + 0.1);
+            osc.start(now);
+            osc.stop(now + 0.1);
+        } else if (type === 'test') {
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(440, now);
+            gainNode.gain.setValueAtTime(0.2, now);
+            gainNode.gain.exponentialRampToValueAtTime(0.01, now + 0.2);
+            osc.start(now);
+            osc.stop(now + 0.2);
+        }
+    } catch(e) {
+        console.error("Audio error: ", e);
+    }
+}
+
 // Gameplay Variables
 let score = 0;
 let combo = 0;
@@ -88,10 +164,14 @@ function initApp() {
         if (el) {
             el.style.pointerEvents = 'auto'; // Ensure pointer events are enabled
             el.style.cursor = 'pointer';
-            el.addEventListener('click', handler);
+            el.addEventListener('click', (e) => {
+                unlockAudio();
+                handler(e);
+            });
             el.addEventListener('touchstart', (e) => {
                 e.preventDefault(); // prevent double click
-                handler();
+                unlockAudio();
+                handler(e);
             }, { passive: false });
         } else {
             console.error(`Button ${id} not found.`);
@@ -112,7 +192,11 @@ function initApp() {
     safeBind('btn-home-from-settings', () => showScreen('home'));
     
     const toggleSound = document.getElementById('toggle-sound');
-    if (toggleSound) toggleSound.onchange = (e) => { state.sound = e.target.checked; saveData(); };
+    if (toggleSound) toggleSound.onchange = (e) => { 
+        state.sound = e.target.checked; 
+        saveData(); 
+        if (state.sound) playSound('test');
+    };
     
     const toggleVib = document.getElementById('toggle-vibration');
     if (toggleVib) toggleVib.onchange = (e) => { state.vibration = e.target.checked; saveData(); };
@@ -121,8 +205,8 @@ function initApp() {
     if (btnReset) btnReset.onclick = () => { localStorage.clear(); location.reload(); };
 
     if (targetBtn) {
-        targetBtn.ontouchstart = (e) => { e.preventDefault(); handleTap(true); };
-        targetBtn.onmousedown = (e) => { e.preventDefault(); handleTap(true); };
+        targetBtn.ontouchstart = (e) => { e.preventDefault(); unlockAudio(); handleTap(true); };
+        targetBtn.onmousedown = (e) => { e.preventDefault(); unlockAudio(); handleTap(true); };
     }
 }
 
@@ -199,6 +283,9 @@ function handleTap(isCorrect) {
         state.coins += 1;
         state.missions.taps++;
         
+        playSound('tap');
+        if (combo > 1 && combo % 5 === 0) playSound('combo');
+        
         if (combo > state.missions.maxCombo) state.missions.maxCombo = combo;
         
         document.getElementById('game-score').innerText = score;
@@ -218,6 +305,7 @@ function handleTap(isCorrect) {
 }
 
 function moveButton(btn) {
+    playSound('move');
     const rect = playArea.getBoundingClientRect();
     const maxX = rect.width - 80;
     const maxY = rect.height - 80;
@@ -242,8 +330,8 @@ function spawnFakeButton() {
     
     moveButton(fake);
     
-    fake.ontouchstart = (e) => { e.preventDefault(); handleTap(false); };
-    fake.onmousedown = (e) => { e.preventDefault(); handleTap(false); };
+    fake.ontouchstart = (e) => { e.preventDefault(); unlockAudio(); handleTap(false); };
+    fake.onmousedown = (e) => { e.preventDefault(); unlockAudio(); handleTap(false); };
     
     playArea.appendChild(fake);
     fakeButtons.push(fake);
@@ -262,6 +350,7 @@ function showToast(msg) {
 function gameOver() {
     isPlaying = false;
     clearInterval(gameLoop);
+    playSound('gameover');
     
     if (state.vibration && navigator.vibrate) navigator.vibrate([100, 50, 100]);
     if (score > state.bestScore) state.bestScore = score;
@@ -308,6 +397,7 @@ function openShop() {
                 saveData();
                 openShop(); // refresh
             } else if (state.coins >= item.price) {
+                playSound('buy');
                 state.coins -= item.price;
                 state.unlockedSkins.push(item.id);
                 state.selectedSkin = item.id;
