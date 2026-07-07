@@ -18,17 +18,16 @@ html, body {
 
 #game-container {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     overflow: hidden;
+    background: #050505;
 }
 
 .screen {
     position: absolute;
-    top: 0;
-    left: 0;
+    inset: 0;
     width: 100%;
     height: 100%;
     display: none;
@@ -48,7 +47,7 @@ html, body {
     font-weight: 900;
     color: #FFFFFF;
     text-transform: uppercase;
-    text-shadow: 0 0 10px #FF2A5F, 0 0 20px #FF2A5F, 0 0 40px #FF2A5F;
+    text-shadow: 0 0 8px #FF2A5F, 0 0 18px #FF2A5F;
     margin-bottom: 30px;
     text-align: center;
 }
@@ -58,15 +57,7 @@ html, body {
     margin-bottom: 20px;
 }
 
-.loader {
-    width: 50px;
-    height: 50px;
-    border: 5px solid rgba(255, 42, 95, 0.3);
-    border-top-color: #FF2A5F;
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
-}
-
+.loader { display: none; }
 @keyframes spin { 100% { transform: rotate(360deg); } }
 
 .button-group {
@@ -85,28 +76,28 @@ html, body {
     font-weight: bold;
     cursor: pointer;
     pointer-events: auto;
-    transition: transform 0.1s, box-shadow 0.2s;
+    transition: transform 0.08s;
     text-align: center;
     color: white;
 }
 
 .btn:active {
-    transform: scale(0.95);
+    transform: scale(0.96);
 }
 
 .btn-primary {
     background: linear-gradient(135deg, #FF2A5F 0%, #D81B60 100%);
-    box-shadow: 0 4px 15px rgba(255, 42, 95, 0.4);
+    box-shadow: 0 4px 12px rgba(255, 42, 95, 0.28);
 }
 
 .btn-secondary {
     background: linear-gradient(135deg, #00E5FF 0%, #00B0FF 100%);
-    box-shadow: 0 4px 15px rgba(0, 229, 255, 0.4);
+    box-shadow: 0 4px 12px rgba(0, 229, 255, 0.28);
 }
 
 .btn-ad {
     background: linear-gradient(135deg, #FFD600 0%, #FFAB00 100%);
-    box-shadow: 0 4px 15px rgba(255, 214, 0, 0.4);
+    box-shadow: 0 4px 12px rgba(255, 214, 0, 0.28);
     color: #000;
 }
 
@@ -115,23 +106,21 @@ html, body {
 }
 
 .glass-panel {
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(24px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(255, 255, 255, 0.06);
+    border: 1px solid rgba(255, 255, 255, 0.12);
     border-radius: 32px;
     padding: 20px;
     width: 100%;
     max-width: 300px;
     margin-bottom: 20px;
     margin-top: 20px;
-    box-shadow: 0 25px 50px -12px rgba(0, 0, 0, 0.25);
+    box-shadow: 0 10px 24px rgba(0, 0, 0, 0.35);
 }
 
 .text-center { text-align: center; }
 .mt-1 { margin-top: 10px; }
 .mt-2 { margin-top: 20px; }
 
-/* Gameplay UI */
 .hud {
     position: absolute;
     top: 20px;
@@ -163,7 +152,6 @@ html, body {
     height: 100%;
     width: 100%;
     background: linear-gradient(to right, #22d3ee, #2563eb);
-    box-shadow: 0 0 12px rgba(34, 211, 238, 0.5);
     transition: width 0.1s linear, background-color 0.3s;
 }
 
@@ -186,10 +174,10 @@ html, body {
     font-weight: 900;
     color: white;
     cursor: pointer;
-    box-shadow: 0 20px 50px rgba(225, 29, 72, 0.4), inset 0 4px 8px rgba(255, 255, 255, 0.3);
-    transition: transform 0.1s;
+    box-shadow: 0 12px 26px rgba(225, 29, 72, 0.32), inset 0 3px 7px rgba(255, 255, 255, 0.25);
+    transition: transform 0.08s;
     transform: translate(-50%, -50%);
-    border: 4px solid rgba(255, 255, 255, 0.2);
+    border: 3px solid rgba(255, 255, 255, 0.2);
     font-size: 1.5rem;
     line-height: 1;
     text-transform: uppercase;
@@ -202,28 +190,25 @@ html, body {
     left: 25%;
     width: 50%;
     height: 15%;
-    background: rgba(255, 255, 255, 0.2);
+    background: rgba(255, 255, 255, 0.18);
     border-radius: 50%;
-    filter: blur(2px);
 }
 
 .game-object:active {
     transform: translate(-50%, -50%) scale(0.95);
-    filter: brightness(1.1);
 }
 
 .skin-default { background: linear-gradient(to bottom right, #ec4899, #e11d48, #6b21a8); }
-.skin-fake { background: linear-gradient(to bottom right, #4ade80, #16a34a, #14532d); box-shadow: 0 20px 50px rgba(22, 163, 74, 0.4), inset 0 4px 8px rgba(255, 255, 255, 0.3); }
-.skin-bomb { background: linear-gradient(to bottom right, #9ca3af, #4b5563, #1f2937); box-shadow: 0 20px 50px rgba(75, 85, 99, 0.4), inset 0 4px 8px rgba(255, 255, 255, 0.3); }
+.skin-fake { background: linear-gradient(to bottom right, #4ade80, #16a34a, #14532d); box-shadow: 0 12px 26px rgba(22, 163, 74, 0.32), inset 0 3px 7px rgba(255, 255, 255, 0.25); }
+.skin-bomb { background: linear-gradient(to bottom right, #9ca3af, #4b5563, #1f2937); box-shadow: 0 12px 26px rgba(75, 85, 99, 0.32), inset 0 3px 7px rgba(255, 255, 255, 0.25); }
 
 .toast {
     position: absolute;
     top: 20%;
     left: 50%;
     transform: translate(-50%, -50%) rotate(-2deg);
-    background: rgba(255, 255, 255, 0.05);
-    backdrop-filter: blur(12px);
-    border: 1px solid rgba(255, 255, 255, 0.1);
+    background: rgba(20, 20, 20, 0.96);
+    border: 1px solid rgba(255, 255, 255, 0.14);
     color: #67e8f9;
     padding: 10px 20px;
     border-radius: 16px;
@@ -233,7 +218,7 @@ html, body {
     text-align: center;
     pointer-events: none;
     opacity: 1;
-    transition: opacity 0.5s;
+    transition: opacity 0.3s;
     z-index: 20;
     white-space: nowrap;
 }
@@ -242,7 +227,6 @@ html, body {
     opacity: 0;
 }
 
-/* Shop Grid */
 .shop-grid {
     display: grid;
     grid-template-columns: 1fr 1fr;
@@ -272,7 +256,6 @@ html, body {
     margin: 0 auto 10px;
 }
 
-/* Missions */
 .missions-list {
     width: 100%;
     max-width: 350px;
